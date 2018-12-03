@@ -8,40 +8,43 @@ python:
   - "3.6"
 
 env:
-  matrix:
-    - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
+  - ANS_VER=2.7.2
+  - ANS_VER=2.7.3
+
+matrix:
+  - OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
+  - OS_TYPE=centos OS_VER=7.5.1804 INIT=/sbin/init
 
 before_install:
   # Prepare Travis environment
-  - red='\033[0;31m'; green='\033[0;32m'; neutral='\033[0m'
-  - >
-    echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"'
-    | sudo tee /etc/default/docker > /dev/null
-  - sudo service docker restart
-  - sleep 5
-  - export CON_ID=$(date +%s)
-  - export INV_FILE=${PWD}/inventory
+  #- >
+  #  echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"'
+  #  | sudo tee /etc/default/docker > /dev/null
+  #- sudo service docker restart
+  #- sleep 5
+  #- export CON_ID=$(date +%s)
+  #- export INV_FILE=${PWD}/inventory
 
   # Install Ansible
-  - pip install -U pip setuptools
-  - pip install ansible==${ANS_VER}
+  #- pip install -U pip setuptools
+  #- pip install ansible==${ANS_VER}
 
   # Install Ansible-Tap
-  - PLUGINS_DIR=~/.ansible/plugins/callback
-  - mkdir -p ${PLUGINS_DIR}
-  - >
-    curl -o ${PLUGINS_DIR}/tap.py
-    https://raw.githubusercontent.com/benwebber/ansible-tap/master/library/callback_plugins/tap.py
+  #- PLUGINS_DIR=~/.ansible/plugins/callback
+  #- mkdir -p ${PLUGINS_DIR}
+  #- >
+  #  curl -o ${PLUGINS_DIR}/tap.py
+  #  https://raw.githubusercontent.com/benwebber/ansible-tap/master/library/callback_plugins/tap.py
 
   # Prepare test container
-  - docker run -d --privileged --name ${CON_ID} ${OS_TYPE}:${OS_VER} ${INIT}
-  - echo ${CON_ID} > ${INV_FILE}
+  #- docker run -d --privileged --name ${CON_ID} ${OS_TYPE}:${OS_VER} ${INIT}
+  #- echo ${CON_ID} > ${INV_FILE}
 
 script:
   # Show test environment
-  - printf ${green}"Test environment"${neutral}"\n"
-  - ansible --version
-  - ansible all -c docker -m setup -a 'filter=ansible_distribution*'
+  #- ansible --version
+  #- ansible all -c docker -m setup -a 'filter=ansible_distribution*'
+  - ls
 
   # Run tests
   #- ansible-playbook -v -c docker web_svr/tests/test.yml
