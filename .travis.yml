@@ -8,42 +8,53 @@ python:
   - "3.6"
 
 env:
-  - OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
-  - OS_TYPE=centos OS_VER=7.5.1804 INIT=/sbin/init
+  - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
+  - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=7.5.1804 INIT=/sbin/init
 
 before_install:
   # Prepare Travis environment
-  #- >
-  #  echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"'
-  #  | sudo tee /etc/default/docker > /dev/null
-  #- sudo service docker restart
-  #- sleep 5
-  #- export CON_ID=$(date +%s)
-  #- export INV_FILE=${PWD}/inventory
+  - >
+    echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"'
+    | sudo tee /etc/default/docker > /dev/null
+  - sudo service docker restart
+  - sleep 5
+  - export CON_ID=$(date +%s)
+  - export INV_FILE=${PWD}/inventory
 
   # Install Ansible
-  #- pip install -U pip setuptools
-  #- pip install ansible==${ANS_VER}
+  - pip install -U pip setuptools
+  - pip install ansible==${ANS_VER}
 
   # Install Ansible-Tap
-  #- PLUGINS_DIR=~/.ansible/plugins/callback
-  #- mkdir -p ${PLUGINS_DIR}
-  #- >
-  #  curl -o ${PLUGINS_DIR}/tap.py
-  #  https://raw.githubusercontent.com/benwebber/ansible-tap/master/library/callback_plugins/tap.py
+  - PLUGINS_DIR=~/.ansible/plugins/callback
+  - mkdir -p ${PLUGINS_DIR}
+  - >
+    curl -o ${PLUGINS_DIR}/tap.py
+    https://raw.githubusercontent.com/benwebber/ansible-tap/master/library/callback_plugins/tap.py
 
-  # Prepare test container
-  #- docker run -d --privileged --name ${CON_ID} ${OS_TYPE}:${OS_VER} ${INIT}
-  #- echo ${CON_ID} > ${INV_FILE}
+  # Prepare a test container that is a target by ansible
+  - docker run -d --privileged --name ${CON_ID} ${OS_TYPE}:${OS_VER} ${INIT}
+  - echo ${CON_ID} > ${INV_FILE}
 
 script:
-  # Show test environment
-  #- ansible --version
-  #- ansible all -c docker -m setup -a 'filter=ansible_distribution*'
-  - ls
+  # Show this test environment
+  - ansible --version
+  - ansible all -c docker -m setup -a 'filter=ansible_distribution*'
 
   # Run tests
-  #- ansible-playbook -v -c docker web_svr/tests/test.yml
+  #- ansible-playbook web_svr/tests/main.yml --syntax-check
+  #- ansible-playbook web_svr/tests/main.yml -c docker
+  #- >
+  #  ANSIBLE_STDOUT_CALLBACK=tap
+  #  ansible-playbook web_svr/tests/unit_test.yml -c docker -v
+  #- >
+  #  ansible-playbook web_svr/tests/main.yml -c docker
+  #  | grep -q 'changed=0.*failed=0'
+  #  && (echo 'Idempotence test: pass' && exit 0)
+  #  || (echo 'Idempotence test: fail' && exit 1)
+  #- >
+  #  ANSIBLE_STDOUT_CALLBACK=tap
+  #  ansible-playbook web_svr/tests/unit_test.yml -c docker -v
 
 notifications:
   email: false
