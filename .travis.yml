@@ -8,10 +8,6 @@ python:
   - "3.6"
 
 env:
-  - ANS_VER=2.7.2
-  - ANS_VER=2.7.3
-
-matrix:
   - OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
   - OS_TYPE=centos OS_VER=7.5.1804 INIT=/sbin/init
 
