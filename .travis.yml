@@ -13,6 +13,7 @@ env:
 
 before_install:
   # Prepare Travis environment
+  - red='\033[0;31m'; green='\033[0;32m'; neutral='\033[0m'
   - >
     echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"'
     | sudo tee /etc/default/docker > /dev/null
@@ -38,6 +39,7 @@ before_install:
 
 script:
   # Show test environment
+  - printf ${green}"Test environment"${neutral}"\n"
   - ansible --version
   - ansible all -c docker -m setup -a 'filter=ansible_distribution*'
 
