@@ -7,17 +7,42 @@ language: python
 python:
   - "3.6"
 
+env:
+  matrix:
+    - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
+
 before_install:
-  - echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"' | sudo tee /etc/default/docker > /dev/null
+  # Prepare Travis environment
+  - >
+    echo 'DOCKER_OPTS="-H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock -s devicemapper"'
+    | sudo tee /etc/default/docker > /dev/null
   - sudo service docker restart
   - sleep 5
+  - export CON_ID=$(date +%s)
+  - export INV_FILE=${PWD}/inventory
+
+  # Install Ansible
   - pip install -U pip setuptools
-  - pip install ansible==2.6.3
+  - pip install ansible==${ANS_VER}
+
+  # Install Ansible-Tap
+  - PLUGINS_DIR=~/.ansible/plugins/callback
+  - mkdir -p ${PLUGINS_DIR}
+  - >
+    curl -o ${PLUGINS_DIR}/tap.py
+    https://raw.githubusercontent.com/benwebber/ansible-tap/master/library/callback_plugins/tap.py
+
+  # Prepare test container
+  - docker run -d --privileged --name ${CON_ID} ${OS_TYPE}:${OS_VER} ${INIT}
+  - echo ${CON_ID} > ${INV_FILE}
 
 script:
-  - python --version
-  - pip --version
+  # Show test environment
   - ansible --version
+  - ansible all -c docker -m setup -a 'filter=ansible_distribution*'
+
+  # Run tests
+  #- ansible-playbook -v -c docker web_svr/tests/test.yml
 
 notifications:
   email: false
