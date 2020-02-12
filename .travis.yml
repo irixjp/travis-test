@@ -1,15 +1,16 @@
 ---
-sudo: required
 services:
   - docker
 
 language: python
 python:
+  - "2.7"
   - "3.6"
 
 env:
-  - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=7.4.1708 INIT=/sbin/init
+  - ANS_VER=2.9.4 OS_TYPE=centos OS_VER=8.1.1911 INIT=/sbin/init
   - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=7.5.1804 INIT=/sbin/init
+  - ANS_VER=2.6.3 OS_TYPE=centos OS_VER=6.10     INIT="tail -f /dev/null"
 
 before_install:
   # Prepare Travis environment
@@ -40,21 +41,6 @@ script:
   # Show this test environment
   - ansible --version
   - ansible all -c docker -m setup -a 'filter=ansible_distribution*'
-
-  # Run tests
-  #- ansible-playbook web_svr/tests/main.yml --syntax-check
-  #- ansible-playbook web_svr/tests/main.yml -c docker
-  #- >
-  #  ANSIBLE_STDOUT_CALLBACK=tap
-  #  ansible-playbook web_svr/tests/unit_test.yml -c docker -v
-  #- >
-  #  ansible-playbook web_svr/tests/main.yml -c docker
-  #  | grep -q 'changed=0.*failed=0'
-  #  && (echo 'Idempotence test: pass' && exit 0)
-  #  || (echo 'Idempotence test: fail' && exit 1)
-  #- >
-  #  ANSIBLE_STDOUT_CALLBACK=tap
-  #  ansible-playbook web_svr/tests/unit_test.yml -c docker -v
 
 notifications:
   email: false
